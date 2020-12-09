@@ -47,7 +47,7 @@ class StreamsProcedures {
                         .firstOrNull { it.topic == topic })
                 .withTopic(topic)
                 .build()
-        getStreamsEventSinkStoreEntry().eventRouter.sendEvents(topic, listOf(streamsEvent))
+        getStreamsEventSinkStoreEntry().eventRouter.sendEvents(topic, listOf(streamsEvent), config ?: emptyMap())
     }
 
     private fun checkEnabled() {

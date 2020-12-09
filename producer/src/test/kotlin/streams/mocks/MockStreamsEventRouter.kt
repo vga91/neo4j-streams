@@ -13,7 +13,7 @@ class MockStreamsEventRouter(logService: LogService = NullLogService.getInstance
                              config: StreamsConfig = Mockito.mock(StreamsConfig::class.java),
                              dbName: String = ""): StreamsEventRouter(logService, config, dbName) {
 
-    override fun sendEvents(topic: String, streamsTransactionEvents: List<out StreamsEvent>) {
+    override fun sendEvents(topic: String, streamsTransactionEvents: List<out StreamsEvent>, config: Map<String, Any?>) {
         events.addAll(streamsTransactionEvents as List<StreamsTransactionEvent>)
     }
 

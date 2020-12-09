@@ -57,12 +57,11 @@ class KafkaEventRouter: StreamsEventRouter {
         StreamsUtils.ignoreExceptions({ kafkaAdminService.stop() }, Exception::class.java)
     }
 
-    private fun send(producerRecord: ProducerRecord<String, ByteArray>) {
+    private fun send(producerRecord: ProducerRecord<String?, ByteArray>) {
         if (!kafkaAdminService.isValidTopic(producerRecord.topic())) {
             if (log.isDebugEnabled) {
                 log.debug("Error while sending record to ${producerRecord.topic()}, because it doesn't exists")
             }
-            // TODO add logging system here
             return
         }
         producer.send(producerRecord) { meta, error ->
@@ -77,34 +76,35 @@ class KafkaEventRouter: StreamsEventRouter {
         }
     }
 
-    private fun sendEvent(partition: Int, topic: String, event: StreamsEvent) {
+    private fun sendEvent(topic: String, event: StreamsEvent, config: Map<String, Any?>) {
         if (log.isDebugEnabled) {
             log.debug("Trying to send a simple event with payload ${event.payload} to kafka")
         }
-        val uuid = UUID.randomUUID().toString()
-        val producerRecord = ProducerRecord(topic, partition, System.currentTimeMillis(), uuid,
-                JSONUtils.writeValueAsBytes(event))
+        val key = config.getOrDefault("key", UUID.randomUUID().toString())
+
+        val producerRecord = ProducerRecord(topic, getPartition(config), System.currentTimeMillis(), JSONUtils.writeValueAsBytes(key!!),
+                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String?, ByteArray>
         send(producerRecord)
     }
 
-    private fun sendEvent(partition: Int, topic: String, event: StreamsTransactionEvent) {
+    private fun sendEvent(topic: String, event: StreamsTransactionEvent, config: Map<String, Any?>) {
         if (log.isDebugEnabled) {
             log.debug("Trying to send a transaction event with txId ${event.meta.txId} and txEventId ${event.meta.txEventId} to kafka")
         }
-        val producerRecord = ProducerRecord(topic, partition, System.currentTimeMillis(), "${event.meta.txId + event.meta.txEventId}-${event.meta.txEventId}",
-                JSONUtils.writeValueAsBytes(event))
+        val producerRecord = ProducerRecord(topic, getPartition(config), System.currentTimeMillis(), getProducerRecordId(event),
+                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String?, ByteArray>
         send(producerRecord)
     }
 
-    override fun sendEvents(topic: String, transactionEvents: List<out StreamsEvent>) {
+    override fun sendEvents(topic: String, transactionEvents: List<out StreamsEvent>, config: Map<String, Any?>) {
         try {
             producer.beginTransaction()
             transactionEvents.forEach {
-                val partition = ThreadLocalRandom.current().nextInt(kafkaConfig.numPartitions)
                 if (it is StreamsTransactionEvent) {
-                    sendEvent(partition, topic, it)
+                    sendEvent(topic, it, config)
+
                 } else {
-                    sendEvent(partition, topic, it)
+                    sendEvent(topic, it, config)
                 }
             }
             producer.commitTransaction()
@@ -122,6 +122,10 @@ class KafkaEventRouter: StreamsEventRouter {
             producer.abortTransaction()
         }
     }
+
+    private fun getProducerRecordId(event: StreamsTransactionEvent) = JSONUtils.writeValueAsBytes("${event.meta.txId + event.meta.txEventId}-${event.meta.txEventId}")
+
+    private fun getPartition(config: Map<String, Any?>) = config.getOrDefault("partition", ThreadLocalRandom.current().nextInt(kafkaConfig.numPartitions)).toString().toInt()
 
 }
 
