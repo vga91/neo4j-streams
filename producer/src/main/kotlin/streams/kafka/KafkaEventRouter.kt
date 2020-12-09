@@ -57,11 +57,12 @@ class KafkaEventRouter: StreamsEventRouter {
         StreamsUtils.ignoreExceptions({ kafkaAdminService.stop() }, Exception::class.java)
     }
 
-    private fun send(producerRecord: ProducerRecord<String?, ByteArray>) {
+    private fun send(producerRecord: ProducerRecord<String, ByteArray>) {
         if (!kafkaAdminService.isValidTopic(producerRecord.topic())) {
             if (log.isDebugEnabled) {
                 log.debug("Error while sending record to ${producerRecord.topic()}, because it doesn't exists")
             }
+            // TODO add logging system here
             return
         }
         producer.send(producerRecord) { meta, error ->
@@ -83,7 +84,7 @@ class KafkaEventRouter: StreamsEventRouter {
         val key = config.getOrDefault("key", UUID.randomUUID().toString())
 
         val producerRecord = ProducerRecord(topic, getPartition(config), System.currentTimeMillis(), JSONUtils.writeValueAsBytes(key!!),
-                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String?, ByteArray>
+                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String, ByteArray>
         send(producerRecord)
     }
 
@@ -92,7 +93,7 @@ class KafkaEventRouter: StreamsEventRouter {
             log.debug("Trying to send a transaction event with txId ${event.meta.txId} and txEventId ${event.meta.txEventId} to kafka")
         }
         val producerRecord = ProducerRecord(topic, getPartition(config), System.currentTimeMillis(), getProducerRecordId(event),
-                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String?, ByteArray>
+                JSONUtils.writeValueAsBytes(event)) as ProducerRecord<String, ByteArray>
         send(producerRecord)
     }
 
