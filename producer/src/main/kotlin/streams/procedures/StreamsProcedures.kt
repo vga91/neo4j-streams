@@ -30,12 +30,25 @@ class StreamsProcedures {
 
     @Procedure(mode = Mode.READ, name = "streams.publish.sync")
     @Description("streams.publish.sync(topic, payload, config) - Allows custom synchronous streaming from Neo4j to the configured stream environment")
-    fun sync(@Name("topic") topic: String?, @Name("payload") payload: Any?,
-             @Name(value = "config", defaultValue = "{}") config: Map<String, Any>?): Stream<StreamPublishResult> {
+    fun sync(@Name(value = "topic", defaultValue = "") topic: String?, @Name("payload") payload: Any?,
+             @Name(value = "config", defaultValue = "{}") config: Map<String, Any>?): Stream<StreamPublishResult>? {
         checkEnabled()
-        if (isTopicNullOrEmpty(topic)) {
-            return Stream.empty()
-        }
+
+        var newDue = 1
+        
+        
+//        if (topic == -1L) ""
+        
+        topic ?: return null
+
+
+        val i: Int = 1
+        topic.indexOf( "", i + 1)
+        
+        
+        
+        
+        
         checkPayloadNotNull(payload)
 
         val streamsEvent = buildStreamEvent(topic!!, payload!!)
@@ -66,6 +79,8 @@ class StreamsProcedures {
     }
 
     private fun isTopicNullOrEmpty(topic: String?): Boolean {
+        
+        
         return if (topic.isNullOrEmpty()) {
             log?.info("Topic empty, no message sent")
             true

@@ -159,7 +159,7 @@ class KafkaEventSink(private val config: Map<String, String>,
                             if (log.isDebugEnabled) {
                                 log.debug("Reading data from topic $topic")
                             }
-                            queryExecution.writeForTopic(topic, data)
+                            queryExecution.writeForTopic(topic, data, this)
                         }
                         streamsConfig.pollInterval
                     } else {

@@ -1,5 +1,6 @@
 package streams
 
+import kotlinx.coroutines.CoroutineScope
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
 import streams.extensions.execute
@@ -14,7 +15,7 @@ class StreamsEventSinkQueryExecution(private val db: GraphDatabaseAPI,
                                      streamsStrategyStorage: StreamsStrategyStorage):
         StreamsSinkService(streamsStrategyStorage) {
 
-    override fun write(query: String, params: Collection<Any>) {
+    override fun write(query: String, params: Collection<Any>, scope: CoroutineScope?) {
         if (params.isEmpty()) return
         if (ConsumerUtils.isWriteableInstance(db)) {
             db.execute(query, mapOf("events" to params)) {

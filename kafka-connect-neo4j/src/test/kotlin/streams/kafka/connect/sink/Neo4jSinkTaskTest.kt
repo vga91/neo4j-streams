@@ -4,6 +4,7 @@ import org.apache.kafka.connect.data.Schema
 import org.apache.kafka.connect.data.SchemaBuilder
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.data.Timestamp
+import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.sink.SinkRecord
 import org.apache.kafka.connect.sink.SinkTask
 import org.apache.kafka.connect.sink.SinkTaskContext
@@ -24,6 +25,7 @@ import streams.service.sink.strategy.CUDOperations
 import streams.service.sink.strategy.CUDRelationship
 import java.util.Date
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
 import java.util.stream.StreamSupport
 import kotlin.test.assertEquals
@@ -107,6 +109,7 @@ class Neo4jSinkTaskTest {
         props["${Neo4jSinkConnectorConfig.TOPIC_CYPHER_PREFIX}$firstTopic"] = "CREATE (n:PersonExt {name: event.firstName, surname: event.lastName})"
         props["${Neo4jSinkConnectorConfig.TOPIC_CYPHER_PREFIX}$secondTopic"] = "CREATE (n:Person {name: event.firstName})"
         props[Neo4jSinkConnectorConfig.AUTHENTICATION_TYPE] = AuthenticationType.NONE.toString()
+        props[Neo4jSinkConnectorConfig.BATCH_PARALLELIZE] = "false"
         props[Neo4jSinkConnectorConfig.BATCH_SIZE] = 2.toString()
         props[SinkTask.TOPICS_CONFIG] = "$firstTopic,$secondTopic"
 
@@ -130,7 +133,46 @@ class Neo4jSinkTaskTest {
                 SinkRecord(firstTopic, 1, null, null, PERSON_SCHEMA, struct, 42),
                 SinkRecord(firstTopic, 1, null, null, PERSON_SCHEMA, struct, 42),
                 SinkRecord(firstTopic, 1, null, null, PERSON_SCHEMA, struct, 42),
-                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 43))
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 43),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 44),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 45),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 46),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 47),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 48),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 49),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 50),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 51),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 52),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 53),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 54),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 55),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 143),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 144),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 145),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 146),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 147),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 148),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 149),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 150),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 151),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 152),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 153),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 154),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 155),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 243),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 244),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 245),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 246),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 247),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 248),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 249),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 250),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 251),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 252),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 253),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 254),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 255),
+                SinkRecord(secondTopic, 1, null, null, PERSON_SCHEMA, struct, 56))
         task.put(input)
         db.defaultDatabaseService().beginTx().use {
             val personCount = it.execute("MATCH (p:Person) RETURN COUNT(p) as COUNT").columnAs<Long>("COUNT").next()
@@ -1276,5 +1318,57 @@ class Neo4jSinkTaskTest {
                     && errorData.exception!!.javaClass.name == "org.neo4j.driver.exceptions.ClientException")
         }
     }
+    
+    // TODO - TEST SIA CON TRUE CHE CON FALSE
+    @Test
+    fun `test TODO name`() {
+        val myTopic = "foo"
+        val props = mutableMapOf<String, String>()
+        props[Neo4jSinkConnectorConfig.SERVER_URI] = db.boltURI().toString()
+        val numberUnwind = 999
+        props["${Neo4jSinkConnectorConfig.TOPIC_CYPHER_PREFIX}$myTopic"] = "UNWIND range(1, $numberUnwind) as a WITH a, event CREATE (n:Person {id: a, name: event.name, surname: event.surname})"
+        props[Neo4jSinkConnectorConfig.AUTHENTICATION_TYPE] = AuthenticationType.NONE.toString()
+        props[Neo4jSinkConnectorConfig.BATCH_PARALLELIZE] = "true"
+        val batchSize = 3
+        props[Neo4jSinkConnectorConfig.BATCH_SIZE] = batchSize.toString()
+        val timeout = 99
+        props[Neo4jSinkConnectorConfig.BATCH_TIMEOUT_MSECS] = timeout.toString()
+        props[SinkTask.TOPICS_CONFIG] = myTopic
+
+        val input = (1..batchSize * 5).map { 
+            SinkRecord(myTopic, 1, null, null, null, mapOf("name" to it.toString()), it.toLong())
+        }
+        try {
+            val taskWithTimeout = Neo4jSinkTask()
+            taskWithTimeout.initialize(mock(SinkTaskContext::class.java))
+            taskWithTimeout.start(props)
+            taskWithTimeout.put(input)
+            fail("Should fail because of TimeoutException")
+        } catch (e: ProcessingError) {
+            val errors = e.errorDatas
+            assertEquals(batchSize * 5, errors.size)
+//            assertTrue(errors.all { 
+//            val exception = it.exception!!
+//            exception.javaClass.name == ConnectException::class.qualifiedName
+//                    && exception.message!!.contains("Timed out waiting for $timeout ms")
+//            })
+        }
+        countFooPersonEntities(0)
+        
+//        props[Neo4jSinkConnectorConfig.BATCH_TIMEOUT_MSECS] = 30000.toString()
+//        val taskValid = Neo4jSinkTask()
+//        taskValid.initialize(mock(SinkTaskContext::class.java))
+//        taskValid.start(props)
+//        taskValid.put(input)
+//        countFooPersonEntities(batchSize * numberUnwind * 5)
+    }
+
+    private fun countFooPersonEntities(expected: Int) {
+        db.defaultDatabaseService().beginTx().use {
+            val personCount = it.execute("MATCH (p:Person) RETURN count(p) as count").columnAs<Long>("count").next()
+            assertEquals(expected, personCount.toInt())
+        }
+    }
+
 
 }

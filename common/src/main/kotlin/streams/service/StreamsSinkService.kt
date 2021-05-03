@@ -1,5 +1,6 @@
 package streams.service
 
+import kotlinx.coroutines.CoroutineScope
 import streams.service.sink.strategy.IngestionStrategy
 
 
@@ -26,17 +27,19 @@ abstract class StreamsStrategyStorage {
 
 abstract class StreamsSinkService(private val streamsStrategyStorage: StreamsStrategyStorage) {
 
-    abstract fun write(query: String, events: Collection<Any>)
+    abstract fun write(query: String, events: Collection<Any>/*, session: Session? = null*/   ,  scope: CoroutineScope? = null)
 
-    private fun writeWithStrategy(data: Collection<StreamsSinkEntity>, strategy: IngestionStrategy) {
-        strategy.mergeNodeEvents(data).forEach { write(it.query, it.events) }
-        strategy.deleteNodeEvents(data).forEach { write(it.query, it.events) }
+    private fun writeWithStrategy(data: Collection<StreamsSinkEntity>, strategy: IngestionStrategy/*, session: Session?*/     ,scope: CoroutineScope?=null) {
+        strategy.mergeNodeEvents(data).forEach { write(it.query, it.events/*, session*/   ,scope) }
+        strategy.deleteNodeEvents(data).forEach { write(it.query, it.events/*, session*/   ,scope) }
 
-        strategy.mergeRelationshipEvents(data).forEach { write(it.query, it.events) }
-        strategy.deleteRelationshipEvents(data).forEach { write(it.query, it.events) }
+        strategy.mergeRelationshipEvents(data).forEach { write(it.query, it.events/*, session*/   ,scope) }
+        strategy.deleteRelationshipEvents(data).forEach { write(it.query, it.events/*, session*/   ,scope) }
     }
 
-    fun writeForTopic(topic: String, params: Collection<StreamsSinkEntity>) {
-        writeWithStrategy(params, streamsStrategyStorage.getStrategy(topic))
+    fun writeForTopic(topic: String, params: Collection<StreamsSinkEntity>/*, session: Session? = null*/, coroutineScope: CoroutineScope?=null) {
+//    fun writeForTopic(topic: String, params: Collection<StreamsSinkEntity>/*, session: Session? = null*/) {
+        
+        writeWithStrategy(params, streamsStrategyStorage.getStrategy(topic)/*, session*/     ,coroutineScope)
     }
 }

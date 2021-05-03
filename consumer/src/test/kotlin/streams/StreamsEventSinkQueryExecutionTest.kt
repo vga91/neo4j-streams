@@ -51,7 +51,7 @@ class StreamsEventSinkQueryExecutionTest {
         // given
         val first = mapOf("id" to "1", "properties" to mapOf("a" to 1))
         val second = mapOf("id" to "2", "properties" to mapOf("a" to 1))
-
+// todo testare
         // when
         streamsEventSinkQueryExecution.writeForTopic("shouldWriteCypherQuery", listOf(StreamsSinkEntity(first, first),
                 StreamsSinkEntity(second, second)))

@@ -57,9 +57,11 @@ class Neo4jSinkConnectorConfig(originals: Map<*, *>): AbstractConfig(config(), o
 
     val retryBackoff: Long
     val retryMaxAttempts: Int
-
+    
+    // TODO - QUESTA
     val batchTimeout: Long
     val batchSize: Int
+    // TODO - QUESTA
     val parallelBatches: Boolean
 
     val topics: Topics
@@ -153,7 +155,9 @@ class Neo4jSinkConnectorConfig(originals: Map<*, *>): AbstractConfig(config(), o
         const val CONNECTION_POOL_MAX_SIZE = "neo4j.connection.max.pool.size"
 
         const val BATCH_SIZE = "neo4j.batch.size"
+        // questa qua...
         const val BATCH_TIMEOUT_MSECS = "neo4j.batch.timeout.msecs"
+        // quando questa è false
         const val BATCH_PARALLELIZE = "neo4j.batch.parallelize"
 
         const val RETRY_BACKOFF_MSECS = "neo4j.retry.backoff.msecs"
