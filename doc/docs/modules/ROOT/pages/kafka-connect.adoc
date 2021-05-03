@@ -206,7 +206,7 @@ include::cud-file-format.adoc[]
 
 Neo4j 4.0 Enterprise has https://neo4j.com/docs/operations-manual/4.0/manage-databases/[multi-tenancy support],
 in order to support this feature, in order to support this feature with Kafka Connect plugin, creating the Sink
-instance we have to add the `database` property, which tells the Connector the database to use as default. If you
+instance we have to add the `neo4j.database` property, which tells the Connector the database to use as default. If you
 don't specify that property, the default database `neo4j` will be used.
 
 [NOTE]
@@ -215,6 +215,8 @@ Remember the naming rules for databases described https://neo4j.com/docs/operati
 ====
 
 Following an example:
+
+TODO - CONTROLLARE PROPRIETA' !!!
 
 [source, json]
 ----
@@ -303,7 +305,6 @@ Following a summary of all the configuration parameters you can use for the Kafk
 | Mandatory
 | Note
 
-| database | <DATABASE_NAME> | false | Specify a database name only if you want to use a non-default database. Default value is 'neo4j'
 | topics | <topicA,topicB> | true | A list of comma-separated topics
 | connector.class | streams.kafka.connect.sink.Neo4jSinkConnector | true |
 | key.converter | org.apache.kafka.connect.storage.StringConverter | false | Converter class for key Connect data
@@ -321,9 +322,13 @@ Following a summary of all the configuration parameters you can use for the Kafk
 | errors.deadletterqueue.context.headers.enable | false/true | false | enrich messages with metadata headers like exception, timestamp, org. topic, org.part, default:false
 | errors.deadletterqueue.context.headers.prefix | prefix-text | false | common prefix for header entries, e.g. `"__streams.errors."` , default: not set
 | errors.deadletterqueue.topic.replication.factor | 3/1 | false | replication factor, need to set to 1 for single partition, default:3
+| neo4j.database | "bolt://neo4j:7687" | true | Specify a database name only if you want to use a non-default database. Default value is 'neo4j'
 | neo4j.server.uri | "bolt://neo4j:7687" | true | Neo4j Server URI
 | neo4j.authentication.basic.username | your_neo4j_user | true | Neo4j username
 | neo4j.authentication.basic.password | your_neo4j_password | true | Neo4j password
+| neo4j.batch.size | Integer | 1000 | The max number of events processed by the Cypher query
+| neo4j.batch.timeout.msecs | Integer | 30000 | The execution timeout for the cypher query
+| neo4j.batch.parallelize | boolean | true | If enabled messages are processed concurrently in the sink. Non concurrent execution supports in-order processing, e.g. for CDC
 | neo4j.encryption.enabled | true/false | false |
 | neo4j.topic.cdc.sourceId | <list of topics separated by semicolon> | false |
 | neo4j.topic.cdc.sourceId.labelName | <the label attached to the node> | false | default value is *SourceEvent*

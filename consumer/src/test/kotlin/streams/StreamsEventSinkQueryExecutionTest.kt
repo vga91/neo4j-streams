@@ -17,6 +17,7 @@ import streams.service.sink.strategy.CypherTemplateStrategy
 import streams.service.sink.strategy.IngestionStrategy
 import kotlin.test.assertEquals
 
+// TODO - A COSA SERVE?
 class StreamsEventSinkQueryExecutionTest {
     private lateinit var db: DbmsRule
     private lateinit var streamsEventSinkQueryExecution: StreamsEventSinkQueryExecution
