@@ -2,11 +2,19 @@ package streams
 
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.config.TopicConfig
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.Relationship
 import org.neo4j.graphdb.schema.ConstraintDefinition
 import org.neo4j.graphdb.schema.ConstraintType
-import streams.events.*
+import streams.events.NodeChange
+import streams.events.NodePayload
+import streams.events.OperationType
+import streams.events.RelationshipNodeChange
+import streams.events.RelationshipPayload
+import streams.events.Schema
+import streams.events.StreamsConstraintType
+import streams.events.StreamsTransactionEvent
 import streams.extensions.labelNames
 import streams.utils.SchemaUtils
 

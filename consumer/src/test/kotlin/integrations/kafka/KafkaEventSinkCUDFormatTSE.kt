@@ -4,13 +4,13 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.hamcrest.Matchers
 import org.junit.Test
 import org.neo4j.function.ThrowingSupplier
+import org.neo4j.graph_integration.strategy.cud.CUDNode
+import org.neo4j.graph_integration.strategy.cud.CUDNodeRel
+import org.neo4j.graph_integration.strategy.cud.CUDOperations
+import org.neo4j.graph_integration.strategy.cud.CUDRelationship
 import streams.Assert
 import streams.extensions.execute
 import streams.utils.JSONUtils
-import streams.service.sink.strategy.CUDNode
-import streams.service.sink.strategy.CUDNodeRel
-import streams.service.sink.strategy.CUDOperations
-import streams.service.sink.strategy.CUDRelationship
 import streams.setConfig
 import streams.start
 import java.util.UUID

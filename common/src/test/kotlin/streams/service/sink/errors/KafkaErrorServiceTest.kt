@@ -6,14 +6,13 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.internals.FutureRecordMetadata
 import org.apache.kafka.common.record.RecordBatch
 import org.apache.kafka.common.utils.SystemTime
-import org.apache.kafka.common.utils.Time
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import streams.service.errors.ErrorData
 import streams.service.errors.ErrorService
 import streams.service.errors.KafkaErrorService
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

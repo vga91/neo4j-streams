@@ -1,8 +1,9 @@
 package streams.service.sink.strategy
 
 import org.junit.Test
-import streams.service.StreamsSinkEntity
-import streams.utils.StreamsUtils
+import org.neo4j.graph_integration.Entity
+import org.neo4j.graph_integration.strategy.pattern.RelationshipPatternIngestionStrategy
+import org.neo4j.graph_integration.utils.IngestionUtils
 import kotlin.test.assertEquals
 
 class RelationshipPatternIngestionStrategyTest {
@@ -14,19 +15,19 @@ class RelationshipPatternIngestionStrategyTest {
         val endPattern = "LabelB{!idEnd}"
         val pattern = "(:$startPattern)-[:REL_TYPE]->(:$endPattern)"
         val config = RelationshipPatternConfiguration.parse(pattern)
-        val strategy = RelationshipPatternIngestionStrategy(config)
-        val data = mapOf("idStart" to 1, "idEnd" to 2,
+        val strategy = RelationshipPatternIngestionStrategy<Map<String, Any>, Map<String, Any>>(config)
+        val data: Map<String, Any> = mapOf("idStart" to 1, "idEnd" to 2,
                 "foo" to "foo",
                 "bar" to "bar")
 
         // when
-        val events = listOf(StreamsSinkEntity(data, data))
-        val queryEvents = strategy.mergeRelationshipEvents(events)
+        val events = listOf(Entity(data, data))
+        val queryEvents = strategy.mergeRelationshipEvents(events).events
 
         // then
         assertEquals(1, queryEvents.size)
         assertEquals("""
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:LabelA{idStart: event.start.keys.idStart})
             |SET start = event.start.properties
             |SET start += event.start.keys
@@ -39,9 +40,9 @@ class RelationshipPatternIngestionStrategyTest {
         assertEquals(listOf(mapOf("start" to mapOf("keys" to mapOf("idStart" to 1), "properties" to emptyMap()),
                 "end" to mapOf("keys" to mapOf("idEnd" to 2), "properties" to emptyMap()),
                 "properties" to mapOf("foo" to "foo", "bar" to "bar"))), queryEvents[0].events)
-        assertEquals(emptyList(), strategy.deleteNodeEvents(events))
-        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events))
-        assertEquals(emptyList(), strategy.mergeNodeEvents(events))
+        assertEquals(emptyList(), strategy.deleteNodeEvents(events).events)
+        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeNodeEvents(events).events)
     }
 
     @Test
@@ -51,19 +52,19 @@ class RelationshipPatternIngestionStrategyTest {
         val endPattern = "LabelB{!idEnd}"
         val pattern = "$startPattern REL_TYPE $endPattern"
         val config = RelationshipPatternConfiguration.parse(pattern)
-        val strategy = RelationshipPatternIngestionStrategy(config)
-        val data = mapOf("idStart" to 1, "idEnd" to 2,
+        val strategy = RelationshipPatternIngestionStrategy<Map<String, Any>, Map<String, Any>>(config)
+        val data: Map<String, Any> = mapOf("idStart" to 1, "idEnd" to 2,
                 "foo" to "foo",
                 "bar" to "bar")
 
         // when
-        val events = listOf(StreamsSinkEntity(data, data))
-        val queryEvents = strategy.mergeRelationshipEvents(events)
+        val events = listOf(Entity(data, data))
+        val queryEvents = strategy.mergeRelationshipEvents(events).events
 
         // then
         assertEquals(1, queryEvents.size)
         assertEquals("""
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:LabelA{idStart: event.start.keys.idStart})
             |SET start = event.start.properties
             |SET start += event.start.keys
@@ -76,9 +77,9 @@ class RelationshipPatternIngestionStrategyTest {
         assertEquals(listOf(mapOf("start" to mapOf("keys" to mapOf("idStart" to 1), "properties" to emptyMap()),
                 "end" to mapOf("keys" to mapOf("idEnd" to 2), "properties" to emptyMap()),
                 "properties" to mapOf("foo" to "foo", "bar" to "bar"))), queryEvents[0].events)
-        assertEquals(emptyList(), strategy.deleteNodeEvents(events))
-        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events))
-        assertEquals(emptyList(), strategy.mergeNodeEvents(events))
+        assertEquals(emptyList(), strategy.deleteNodeEvents(events).events)
+        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeNodeEvents(events).events)
     }
 
     @Test
@@ -88,19 +89,19 @@ class RelationshipPatternIngestionStrategyTest {
         val endPattern = "LabelB{!idEnd}"
         val pattern = "(:$endPattern)<-[:REL_TYPE]-(:$startPattern)"
         val config = RelationshipPatternConfiguration.parse(pattern)
-        val strategy = RelationshipPatternIngestionStrategy(config)
-        val data = mapOf("idStart" to 1, "idEnd" to 2,
+        val strategy = RelationshipPatternIngestionStrategy<Map<String, Any>, Map<String, Any>>(config)
+        val data: Map<String, Any> = mapOf("idStart" to 1, "idEnd" to 2,
                 "foo" to "foo",
                 "bar" to "bar")
 
         // when
-        val events = listOf(StreamsSinkEntity(data, data))
-        val queryEvents = strategy.mergeRelationshipEvents(events)
+        val events = listOf(Entity(data, data))
+        val queryEvents = strategy.mergeRelationshipEvents(events).events
 
         // then
         assertEquals(1, queryEvents.size)
         assertEquals("""
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:LabelA{idStart: event.start.keys.idStart})
             |SET start = event.start.properties
             |SET start += event.start.keys
@@ -113,9 +114,9 @@ class RelationshipPatternIngestionStrategyTest {
         assertEquals(listOf(mapOf("start" to mapOf("keys" to mapOf("idStart" to 1), "properties" to emptyMap()),
                 "end" to mapOf("keys" to mapOf("idEnd" to 2), "properties" to emptyMap()),
                 "properties" to mapOf("foo" to "foo", "bar" to "bar"))), queryEvents[0].events)
-        assertEquals(emptyList(), strategy.deleteNodeEvents(events))
-        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events))
-        assertEquals(emptyList(), strategy.mergeNodeEvents(events))
+        assertEquals(emptyList(), strategy.deleteNodeEvents(events).events)
+        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeNodeEvents(events).events)
     }
 
     @Test
@@ -125,21 +126,21 @@ class RelationshipPatternIngestionStrategyTest {
         val endPattern = "LabelB{!idEnd, bar.mapBar}"
         val pattern = "(:$startPattern)-[:REL_TYPE]->(:$endPattern)"
         val config = RelationshipPatternConfiguration.parse(pattern)
-        val strategy = RelationshipPatternIngestionStrategy(config)
-        val data = mapOf("idStart" to 1, "idEnd" to 2,
+        val strategy = RelationshipPatternIngestionStrategy<Map<String, Any>, Map<String, Any>>(config)
+        val data: Map<String, Any> = mapOf("idStart" to 1, "idEnd" to 2,
                 "foo" to mapOf("mapFoo" to "mapFoo"),
                 "bar" to mapOf("mapBar" to "mapBar"),
                 "rel" to 1,
                 "map" to mapOf("a" to "a", "inner" to mapOf("b" to "b")))
 
         // when
-        val events = listOf(StreamsSinkEntity(data, data))
-        val queryEvents = strategy.mergeRelationshipEvents(events)
+        val events = listOf(Entity(data, data))
+        val queryEvents = strategy.mergeRelationshipEvents(events).events
 
         // then
         assertEquals(1, queryEvents.size)
         assertEquals("""
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:LabelA{idStart: event.start.keys.idStart})
             |SET start = event.start.properties
             |SET start += event.start.keys
@@ -154,9 +155,9 @@ class RelationshipPatternIngestionStrategyTest {
                 "end" to mapOf("keys" to mapOf("idEnd" to 2), "properties" to mapOf("bar.mapBar" to "mapBar")),
                 "properties" to mapOf("rel" to 1, "map.a" to "a", "map.inner.b" to "b"))
         ), queryEvents[0].events)
-        assertEquals(emptyList(), strategy.deleteNodeEvents(events))
-        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events))
-        assertEquals(emptyList(), strategy.mergeNodeEvents(events))
+        assertEquals(emptyList(), strategy.deleteNodeEvents(events).events)
+        assertEquals(emptyList(), strategy.deleteRelationshipEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeNodeEvents(events).events)
     }
 
     @Test
@@ -166,19 +167,19 @@ class RelationshipPatternIngestionStrategyTest {
         val endPattern = "LabelB{!idEnd}"
         val pattern = "(:$startPattern)-[:REL_TYPE]->(:$endPattern)"
         val config = RelationshipPatternConfiguration.parse(pattern)
-        val strategy = RelationshipPatternIngestionStrategy(config)
-        val data = mapOf("idStart" to 1, "idEnd" to 2,
+        val strategy = RelationshipPatternIngestionStrategy<Map<String, Any>, Nothing>(config)
+        val data: Map<String, Any> = mapOf("idStart" to 1, "idEnd" to 2,
                 "foo" to "foo",
                 "bar" to "bar")
 
         // when
-        val events = listOf(StreamsSinkEntity(data, null))
-        val queryEvents = strategy.deleteRelationshipEvents(events)
+        val events = listOf(Entity(data, null))
+        val queryEvents = strategy.deleteRelationshipEvents(events).events
 
         // then
         assertEquals(1, queryEvents.size)
         assertEquals("""
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MATCH (start:LabelA{idStart: event.start.keys.idStart})
             |MATCH (end:LabelB{idEnd: event.end.keys.idEnd})
             |MATCH (start)-[r:REL_TYPE]->(end)
@@ -186,9 +187,9 @@ class RelationshipPatternIngestionStrategyTest {
         """.trimMargin(), queryEvents[0].query)
         assertEquals(listOf(mapOf("start" to mapOf("keys" to mapOf("idStart" to 1), "properties" to emptyMap()),
                 "end" to mapOf("keys" to mapOf("idEnd" to 2), "properties" to emptyMap()))), queryEvents[0].events)
-        assertEquals(emptyList(), strategy.deleteNodeEvents(events))
-        assertEquals(emptyList(), strategy.mergeRelationshipEvents(events))
-        assertEquals(emptyList(), strategy.mergeNodeEvents(events))
+        assertEquals(emptyList(), strategy.deleteNodeEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeRelationshipEvents(events).events)
+        assertEquals(emptyList(), strategy.mergeNodeEvents(events).events)
     }
 
 }

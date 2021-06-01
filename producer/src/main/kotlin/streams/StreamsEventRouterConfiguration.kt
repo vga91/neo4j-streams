@@ -1,9 +1,9 @@
 package streams
 
 import org.apache.commons.lang3.StringUtils
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.logging.Log
 import streams.config.StreamsConfig
-import streams.events.EntityType
 import streams.events.RelKeyStrategy
 
 

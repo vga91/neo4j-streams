@@ -2,8 +2,8 @@ package streams.integrations
 
 import org.junit.Before
 import org.junit.Test
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import streams.events.Constraint
-import streams.events.EntityType
 import streams.events.NodePayload
 import streams.events.OperationType
 import streams.events.RelationshipPayload

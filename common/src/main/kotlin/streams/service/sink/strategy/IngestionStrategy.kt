@@ -2,17 +2,6 @@ package streams.service.sink.strategy
 
 import streams.events.Constraint
 import streams.events.RelationshipPayload
-import streams.service.StreamsSinkEntity
-
-
-data class QueryEvents(val query: String, val events: List<Map<String, Any?>>)
-
-interface IngestionStrategy {
-    fun mergeNodeEvents(events: Collection<StreamsSinkEntity>): List<QueryEvents>
-    fun deleteNodeEvents(events: Collection<StreamsSinkEntity>): List<QueryEvents>
-    fun mergeRelationshipEvents(events: Collection<StreamsSinkEntity>): List<QueryEvents>
-    fun deleteRelationshipEvents(events: Collection<StreamsSinkEntity>): List<QueryEvents>
-}
 
 data class RelationshipSchemaMetadata(val label: String,
                                       val startLabels: List<String>,

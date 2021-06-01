@@ -1,18 +1,16 @@
 package streams
 
+import org.neo4j.graph_integration.IngestionStrategy
+import org.neo4j.graph_integration.strategy.cud.CUDIngestionStrategy
+import org.neo4j.graph_integration.strategy.cypher.CypherTemplateIngestionStrategy
+import org.neo4j.graph_integration.strategy.pattern.NodePatternIngestionStrategy
+import org.neo4j.graph_integration.strategy.pattern.RelationshipPatternIngestionStrategy
 import org.neo4j.graphdb.GraphDatabaseService
-import org.neo4j.kernel.internal.GraphDatabaseAPI
-import streams.config.StreamsConfig
 import streams.extensions.isDefaultDb
 import streams.service.StreamsStrategyStorage
 import streams.service.TopicType
-import streams.service.sink.strategy.CUDIngestionStrategy
-import streams.service.sink.strategy.CypherTemplateStrategy
-import streams.service.sink.strategy.IngestionStrategy
 import streams.service.sink.strategy.NodePatternConfiguration
-import streams.service.sink.strategy.NodePatternIngestionStrategy
 import streams.service.sink.strategy.RelationshipPatternConfiguration
-import streams.service.sink.strategy.RelationshipPatternIngestionStrategy
 import streams.service.sink.strategy.SchemaIngestionStrategy
 import streams.service.sink.strategy.SourceIdIngestionStrategy
 
@@ -26,7 +24,7 @@ class Neo4jStreamsStrategyStorage(private val streamsTopicService: StreamsTopicS
 
     private fun <T> getTopicsByTopicType(topicType: TopicType): T = streamsTopicService.getByTopicType(topicType) as T
 
-    override fun getStrategy(topic: String): IngestionStrategy = when (val topicType = getTopicType(topic)) {
+    override fun getStrategy(topic: String): IngestionStrategy<Any, Any> = when (val topicType = getTopicType(topic)) {
         TopicType.CDC_SOURCE_ID -> {
             val strategyConfig = StreamsSinkConfiguration
                     .createSourceIdIngestionStrategyConfig(streamsConfig, db.databaseName(), db.isDefaultDb())
@@ -43,7 +41,7 @@ class Neo4jStreamsStrategyStorage(private val streamsTopicService: StreamsTopicS
             RelationshipPatternIngestionStrategy(map.getValue(topic))
         }
         TopicType.CYPHER -> {
-            CypherTemplateStrategy(streamsTopicService.getCypherTemplate(topic)!!)
+            CypherTemplateIngestionStrategy(streamsTopicService.getCypherTemplate(topic)!!)
         }
         else -> throw RuntimeException("Topic Type not Found")
     }

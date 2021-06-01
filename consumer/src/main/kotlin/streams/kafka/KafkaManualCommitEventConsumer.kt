@@ -5,10 +5,10 @@ import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.errors.WakeupException
+import org.neo4j.graph_integration.Entity
 import org.neo4j.logging.Log
 import streams.extensions.offsetAndMetadata
 import streams.extensions.topicPartition
-import streams.service.StreamsSinkEntity
 import java.time.Duration
 
 class KafkaManualCommitEventConsumer(config: KafkaSinkConfiguration,
@@ -86,12 +86,13 @@ class KafkaManualCommitEventConsumer(config: KafkaSinkConfiguration,
         }
     }
 
-    override fun read(action: (String, List<StreamsSinkEntity>) -> Unit) {
+    // todo - tipizzaz, senno any any
+    override fun read(action: (String, List<Entity<Any, Any>>) -> Unit) {
         val topicMap = readSimple(action)
         commitData(true, topicMap)
     }
 
-    override fun read(topicConfig: Map<String, Any>, action: (String, List<StreamsSinkEntity>) -> Unit) {
+    override fun read(topicConfig: Map<String, Any>, action: (String, List<Entity<Any, Any>>) -> Unit) {
         val kafkaTopicConfig = KafkaTopicConfig.fromMap(topicConfig)
         val topicMap = if (kafkaTopicConfig.topicPartitionsMap.isEmpty()) {
             readSimple(action)
@@ -101,7 +102,7 @@ class KafkaManualCommitEventConsumer(config: KafkaSinkConfiguration,
         commitData(kafkaTopicConfig.commit, topicMap)
     }
 
-    private fun readSimple(action: (String, List<StreamsSinkEntity>) -> Unit): Map<TopicPartition, OffsetAndMetadata> {
+    private fun readSimple(action: (String, List<Entity<Any, Any>>) -> Unit): Map<TopicPartition, OffsetAndMetadata> {
         val records = consumer.poll(Duration.ZERO)
         return when (records.isEmpty) {
             true -> emptyMap()

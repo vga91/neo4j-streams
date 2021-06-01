@@ -2,6 +2,7 @@ package streams.serialization
 
 import org.junit.Test
 import org.neo4j.driver.Values
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.values.storable.CoordinateReferenceSystem.Cartesian
 import org.neo4j.values.storable.CoordinateReferenceSystem.Cartesian_3D
 import org.neo4j.values.storable.CoordinateReferenceSystem.WGS84
@@ -10,7 +11,6 @@ import org.neo4j.values.storable.DateTimeValue.datetime
 import org.neo4j.values.storable.DateValue.date
 import org.neo4j.values.storable.TimeValue.time
 import org.neo4j.values.storable.Values.pointValue
-import streams.events.EntityType
 import streams.events.Meta
 import streams.events.NodeChange
 import streams.events.NodePayload

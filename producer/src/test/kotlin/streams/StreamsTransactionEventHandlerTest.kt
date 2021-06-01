@@ -6,6 +6,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.graphdb.Label
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.RelationshipType

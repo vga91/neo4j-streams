@@ -1,9 +1,7 @@
 package streams
 
+import org.neo4j.graph_integration.Entity
 import org.neo4j.logging.Log
-import streams.config.StreamsConfig
-import streams.service.StreamsSinkEntity
-import streams.service.errors.ErrorService
 
 
 abstract class StreamsEventConsumer(log: Log, topics: Set<Any>) {
@@ -12,9 +10,9 @@ abstract class StreamsEventConsumer(log: Log, topics: Set<Any>) {
 
     abstract fun start()
 
-    abstract fun read(topicConfig: Map<String, Any> = emptyMap(), action: (String, List<StreamsSinkEntity>) -> Unit)
+    abstract fun read(topicConfig: Map<String, Any> = emptyMap(), action: (String, List<Entity<Any, Any>>) -> Unit)
 
-    abstract fun read(action: (String, List<StreamsSinkEntity>) -> Unit)
+    abstract fun read(action: (String, List<Entity<Any, Any>>) -> Unit)
 
     abstract fun invalidTopics(): List<String>
 

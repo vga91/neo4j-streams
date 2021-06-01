@@ -1,6 +1,12 @@
 package streams.service
 
-import streams.service.sink.strategy.*
+import org.neo4j.graph_integration.strategy.pattern.NodePatternIngestionStrategy
+import org.neo4j.graph_integration.strategy.pattern.RelationshipPatternIngestionStrategy
+import streams.service.sink.strategy.NodePatternConfiguration
+import streams.service.sink.strategy.RelationshipPatternConfiguration
+import streams.service.sink.strategy.SchemaIngestionStrategy
+import streams.service.sink.strategy.SourceIdIngestionStrategy
+import streams.service.sink.strategy.SourceIdIngestionStrategyConfig
 import kotlin.reflect.jvm.javaType
 
 class TopicValidationException(message: String): RuntimeException(message)
@@ -109,16 +115,20 @@ object TopicUtils {
                 .filterKeys { it != TopicType.CYPHER }
                 .mapValues { (type, config) ->
                     when (type) {
-                        TopicType.CDC_SOURCE_ID -> SourceIdIngestionStrategy(sourceIdStrategyConfig)
-                        TopicType.CDC_SCHEMA -> SchemaIngestionStrategy()
-                        TopicType.CUD -> CUDIngestionStrategy()
+                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
+                        TopicType.CDC_SOURCE_ID -> SourceIdIngestionStrategy<Any, Any>(sourceIdStrategyConfig)
+                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
+                        TopicType.CDC_SCHEMA -> SchemaIngestionStrategy<Any, Any>()
+                        TopicType.CUD -> org.neo4j.graph_integration.strategy.cud.CUDIngestionStrategy<Any, Any>()
+                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.PATTERN_NODE -> {
                             val map = config as Map<String, NodePatternConfiguration>
-                            map.mapValues { NodePatternIngestionStrategy(it.value) }
+                            map.mapValues { NodePatternIngestionStrategy<Any, Any>(it.value) }
                         }
+                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.PATTERN_RELATIONSHIP -> {
                             val map = config as Map<String, RelationshipPatternConfiguration>
-                            map.mapValues { RelationshipPatternIngestionStrategy(it.value) }
+                            map.mapValues { RelationshipPatternIngestionStrategy<Any, Any>(it.value) }
                         }
                         else -> throw RuntimeException("Unsupported topic type $type")
                     }

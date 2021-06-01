@@ -2,6 +2,7 @@ package streams
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.kafka.common.internals.Topic
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.graphdb.Entity
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.Relationship

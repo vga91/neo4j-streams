@@ -6,7 +6,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
-import org.neo4j.graphdb.GraphDatabaseService
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.graphdb.Label
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.Relationship
@@ -18,7 +18,10 @@ import org.neo4j.graphdb.schema.ConstraintDefinition
 import org.neo4j.graphdb.schema.ConstraintType
 import org.neo4j.graphdb.schema.Schema
 import org.neo4j.kernel.internal.GraphDatabaseAPI
-import streams.events.*
+import streams.events.Constraint
+import streams.events.OperationType
+import streams.events.RelationshipChange
+import streams.events.RelationshipPayload
 import streams.events.StreamsConstraintType
 import streams.mocks.MockStreamsEventRouter
 import kotlin.test.assertEquals
