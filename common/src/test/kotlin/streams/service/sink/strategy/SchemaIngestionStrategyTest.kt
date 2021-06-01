@@ -60,7 +60,6 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        // TODO - NON PASSO ARGOMENTI...
         val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
         val txEvents = listOf(Entity(cdcDataStart, cdcDataStart),
             Entity(cdcDataEnd, cdcDataEnd),
