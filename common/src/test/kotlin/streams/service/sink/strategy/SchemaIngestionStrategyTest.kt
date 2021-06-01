@@ -4,8 +4,6 @@ import org.junit.Test
 import org.neo4j.graph_integration.Entity
 import org.neo4j.graph_integration.utils.IngestionUtils
 import streams.events.*
-//import streams.service.StreamsSinkEntity
-import streams.utils.StreamsUtils
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -273,10 +271,6 @@ class SchemaIngestionStrategyTest {
         )
         val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
         val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
-
-        
-        // TODO - mergeRelationshipEvents(txEvents).INVALIDEVENTS CHE SERVE
-        
         
         // when
         val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events

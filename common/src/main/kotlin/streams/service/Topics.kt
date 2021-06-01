@@ -115,17 +115,13 @@ object TopicUtils {
                 .filterKeys { it != TopicType.CYPHER }
                 .mapValues { (type, config) ->
                     when (type) {
-                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.CDC_SOURCE_ID -> SourceIdIngestionStrategy<Any, Any>(sourceIdStrategyConfig)
-                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.CDC_SCHEMA -> SchemaIngestionStrategy<Any, Any>()
                         TopicType.CUD -> org.neo4j.graph_integration.strategy.cud.CUDIngestionStrategy<Any, Any>()
-                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.PATTERN_NODE -> {
                             val map = config as Map<String, NodePatternConfiguration>
                             map.mapValues { NodePatternIngestionStrategy<Any, Any>(it.value) }
                         }
-                        // TODO - ANY ANY, StreamsTransactionEvent, StreamsTransactionEvent
                         TopicType.PATTERN_RELATIONSHIP -> {
                             val map = config as Map<String, RelationshipPatternConfiguration>
                             map.mapValues { RelationshipPatternIngestionStrategy<Any, Any>(it.value) }

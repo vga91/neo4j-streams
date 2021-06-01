@@ -4,8 +4,6 @@ import org.junit.Test
 import org.neo4j.graph_integration.Entity
 import org.neo4j.graph_integration.utils.IngestionUtils
 import streams.events.*
-//import streams.service.StreamsSinkEntity
-import streams.utils.StreamsUtils
 import kotlin.test.assertEquals
 
 class SourceIdIngestionStrategyTest {

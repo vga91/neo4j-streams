@@ -60,7 +60,6 @@ private fun convertData(data: Any?, stringWhenFailure: Boolean = false): Any? {
     }
 }
 
-// TODO - TIPIZZAZIONE, FORSE VA BENE ANY,ANY
 fun ConsumerRecord<*, *>.toEntity(): Entity<Any, Any> {
     val key = convertData(this.key(), true)
     val value = convertData(this.value())
