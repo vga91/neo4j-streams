@@ -15,12 +15,12 @@ import org.neo4j.driver.SessionConfig
 import org.neo4j.driver.exceptions.ClientException
 import org.neo4j.driver.exceptions.TransientException
 import org.neo4j.driver.net.ServerAddress
+import org.neo4j.graph_integration.Entity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import streams.extensions.awaitAll
 import streams.extensions.errors
 import streams.kafka.connect.utils.PropertiesUtil
-import streams.service.StreamsSinkEntity
 import streams.service.StreamsSinkService
 import streams.utils.retryForException
 import java.util.concurrent.TimeUnit
@@ -113,7 +113,7 @@ class Neo4jService(private val config: Neo4jSinkConnectorConfig):
         }
     }
 
-    fun writeData(data: Map<String, List<List<StreamsSinkEntity>>>) {
+    fun writeData(data: Map<String, List<List<Entity<Any, Any>>>>) {
         val errors = if (config.parallelBatches) writeDataAsync(data) else writeDataSync(data);
         if (errors.isNotEmpty()) {
             throw ConnectException(errors.map { it.message }.toSet()
@@ -123,7 +123,7 @@ class Neo4jService(private val config: Neo4jSinkConnectorConfig):
 
     @ExperimentalCoroutinesApi
     @ObsoleteCoroutinesApi
-    private fun writeDataAsync(data: Map<String, List<List<StreamsSinkEntity>>>) = runBlocking {
+    private fun writeDataAsync(data: Map<String, List<List<Entity<Any, Any>>>>) = runBlocking {
         val jobs = data
                 .flatMap { (topic, records) ->
                     records.map { async(Dispatchers.IO) { writeForTopic(topic, it) } }
@@ -133,7 +133,7 @@ class Neo4jService(private val config: Neo4jSinkConnectorConfig):
         jobs.mapNotNull { it.errors() }
     }
     
-    private fun writeDataSync(data: Map<String, List<List<StreamsSinkEntity>>>) =
+    private fun writeDataSync(data: Map<String, List<List<Entity<Any, Any>>>>) =
             data.flatMap { (topic, records) ->
                 records.mapNotNull {
                     try {

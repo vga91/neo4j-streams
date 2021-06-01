@@ -1,10 +1,10 @@
 package streams.utils
 
+import org.neo4j.graph_integration.Entity
 import streams.events.Constraint
 import streams.events.RelKeyStrategy
 import streams.events.StreamsConstraintType
 import streams.events.StreamsTransactionEvent
-import streams.service.StreamsSinkEntity
 
 object SchemaUtils {
     fun getNodeKeys(labels: List<String>, propertyKeys: Set<String>, constraints: List<Constraint>, keyStrategy: RelKeyStrategy = RelKeyStrategy.DEFAULT): Set<String> =
@@ -30,10 +30,10 @@ object SchemaUtils {
                 }
 
 
-    fun toStreamsTransactionEvent(streamsSinkEntity: StreamsSinkEntity,
-                                  evaluation: (StreamsTransactionEvent) -> Boolean)
+    fun <KEY, VALUE> toStreamsTransactionEvent(streamsSinkEntity: Entity<KEY, VALUE>, 
+                                               evaluation: (StreamsTransactionEvent) -> Boolean)
             : StreamsTransactionEvent? = if (streamsSinkEntity.value != null) {
-        val data = JSONUtils.asStreamsTransactionEvent(streamsSinkEntity.value)
+        val data = JSONUtils.asStreamsTransactionEvent(streamsSinkEntity.value!!)
         if (evaluation(data)) data else null
     } else {
         null

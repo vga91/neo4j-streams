@@ -9,12 +9,12 @@ import org.hamcrest.Matchers
 import org.junit.*
 import org.neo4j.driver.SessionConfig
 import org.neo4j.function.ThrowingSupplier
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import streams.Assert
 import streams.KafkaTestUtils
 import streams.Neo4jContainerExtension
 import streams.events.Constraint
-import streams.events.EntityType
 import streams.events.NodeChange
 import streams.events.OperationType
 import streams.events.RelKeyStrategy

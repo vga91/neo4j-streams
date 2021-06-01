@@ -8,12 +8,11 @@ import org.apache.avro.generic.IndexedRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
+import org.neo4j.graph_integration.Entity
 import org.neo4j.graphdb.Node
 import streams.utils.JSONUtils
-import streams.service.StreamsSinkEntity
 import java.nio.ByteBuffer
-import java.util.*
-import javax.lang.model.SourceVersion
+import java.util.Properties
 
 fun Map<String,String>.getInt(name:String, defaultValue: Int) = this.get(name)?.toInt() ?: defaultValue
 fun Map<*, *>.asProperties() = this.let {
@@ -30,20 +29,6 @@ fun String.toPointCase(): String {
     return this.split("(?<=[a-z])(?=[A-Z])".toRegex()).joinToString(separator = ".").toLowerCase()
 }
 
-fun String.quote(): String = if (SourceVersion.isIdentifier(this)) this else "`$this`"
-
-fun Map<String, Any?>.flatten(map: Map<String, Any?> = this, prefix: String = ""): Map<String, Any?> {
-    return map.flatMap {
-        val key = it.key
-        val value = it.value
-        val newKey = if (prefix != "") "$prefix.$key" else key
-        if (value is Map<*, *>) {
-            flatten(value as Map<String, Any>, newKey).toList()
-        } else {
-            listOf(newKey to value)
-        }
-    }.toMap()
-}
 
 fun ConsumerRecord<*, *>.topicPartition() = TopicPartition(this.topic(), this.partition())
 fun ConsumerRecord<*, *>.offsetAndMetadata(metadata: String = "") = OffsetAndMetadata(this.offset() + 1, metadata)
@@ -74,8 +59,9 @@ private fun convertData(data: Any?, stringWhenFailure: Boolean = false): Any? {
         else -> if (stringWhenFailure) data.toString() else throw RuntimeException("Unsupported type ${data::class.java.name}")
     }
 }
-fun ConsumerRecord<*, *>.toStreamsSinkEntity(): StreamsSinkEntity {
+
+fun ConsumerRecord<*, *>.toEntity(): Entity<Any, Any> {
     val key = convertData(this.key(), true)
     val value = convertData(this.value())
-    return StreamsSinkEntity(key, value)
+    return Entity(key, value)
 }

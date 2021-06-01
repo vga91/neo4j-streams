@@ -7,16 +7,15 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
+import org.neo4j.graph_integration.Entity
 import org.neo4j.logging.Log
 import streams.StreamsEventConsumer
 import streams.extensions.offsetAndMetadata
-import streams.extensions.toStreamsSinkEntity
-import streams.extensions.topicPartition
-import streams.service.StreamsSinkEntity
-import streams.service.errors.*
+import streams.extensions.toEntity
+import streams.service.errors.ErrorData
+import streams.service.errors.ErrorService
+import streams.service.errors.KafkaErrorService
 import java.time.Duration
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class KafkaTopicConfig(val commit: Boolean, val topicPartitionsMap: Map<TopicPartition, Long>) {
@@ -81,7 +80,7 @@ open class KafkaAutoCommitEventConsumer(private val config: KafkaSinkConfigurati
         errorService.close()
     }
 
-    private fun readSimple(action: (String, List<StreamsSinkEntity>) -> Unit) {
+    private fun readSimple(action: (String, List<Entity<Any, Any>>) -> Unit) {
         val records = consumer.poll(Duration.ZERO)
         if (records.isEmpty) return
         this.topics.forEach { topic ->
@@ -90,16 +89,16 @@ open class KafkaAutoCommitEventConsumer(private val config: KafkaSinkConfigurati
         }
     }
 
-    fun executeAction(action: (String, List<StreamsSinkEntity>) -> Unit, topic: String, topicRecords: Iterable<ConsumerRecord<out Any, out Any>>) {
+    fun executeAction(action: (String, List<Entity<Any, Any>>) -> Unit, topic: String, topicRecords: Iterable<ConsumerRecord<out Any, out Any>>) {
         try {
-            action(topic, topicRecords.map { it.toStreamsSinkEntity() })
+            action(topic, topicRecords.map { it.toEntity() })
         } catch (e: Exception) {
             errorService.report(topicRecords.map { ErrorData.from(it, e, this::class.java, dbName) })
         }
     }
 
     fun readFromPartition(kafkaTopicConfig: KafkaTopicConfig,
-                          action: (String, List<StreamsSinkEntity>) -> Unit): Map<TopicPartition, OffsetAndMetadata> {
+                          action: (String, List<Entity<Any, Any>>) -> Unit): Map<TopicPartition, OffsetAndMetadata> {
         setSeek(kafkaTopicConfig.topicPartitionsMap)
         val records = consumer.poll(Duration.ZERO)
         return when (records.isEmpty) {
@@ -114,11 +113,11 @@ open class KafkaAutoCommitEventConsumer(private val config: KafkaSinkConfigurati
         }
     }
 
-    override fun read(action: (String, List<StreamsSinkEntity>) -> Unit) {
+    override fun read(action: (String, List<Entity<Any, Any>>) -> Unit) {
         readSimple(action)
     }
 
-    override fun read(topicConfig: Map<String, Any>, action: (String, List<StreamsSinkEntity>) -> Unit) {
+    override fun read(topicConfig: Map<String, Any>, action: (String, List<Entity<Any, Any>>) -> Unit) {
         val kafkaTopicConfig = KafkaTopicConfig.fromMap(topicConfig)
         if (kafkaTopicConfig.topicPartitionsMap.isEmpty()) {
             readSimple(action)

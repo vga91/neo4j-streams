@@ -11,6 +11,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.neo4j.configuration.GraphDatabaseSettings
+import org.neo4j.graph_integration.strategy.cud.CUDNode
+import org.neo4j.graph_integration.strategy.cud.CUDNodeRel
+import org.neo4j.graph_integration.strategy.cud.CUDOperations
+import org.neo4j.graph_integration.strategy.cud.CUDRelationship
 import org.neo4j.graphdb.Label
 import org.neo4j.graphdb.Node
 import org.neo4j.harness.junit.rule.Neo4jRule
@@ -18,10 +22,6 @@ import streams.events.*
 import streams.utils.JSONUtils
 import streams.service.errors.ErrorService
 import streams.service.errors.ProcessingError
-import streams.service.sink.strategy.CUDNode
-import streams.service.sink.strategy.CUDNodeRel
-import streams.service.sink.strategy.CUDOperations
-import streams.service.sink.strategy.CUDRelationship
 import java.util.Date
 import java.util.UUID
 import java.util.stream.Collectors

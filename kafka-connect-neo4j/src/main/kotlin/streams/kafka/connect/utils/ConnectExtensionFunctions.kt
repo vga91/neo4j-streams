@@ -2,11 +2,11 @@ package streams.kafka.connect.utils
 
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.sink.SinkRecord
+import org.neo4j.graph_integration.Entity
 import streams.kafka.connect.sink.converters.Neo4jValueConverter
 import streams.utils.JSONUtils
-import streams.service.StreamsSinkEntity
 
-fun SinkRecord.toStreamsSinkEntity(): StreamsSinkEntity = StreamsSinkEntity(
+fun SinkRecord.toEntity(): Entity<Any, Any> = Entity(
         convertData(this.key(),true),
         convertData(this.value()))
 

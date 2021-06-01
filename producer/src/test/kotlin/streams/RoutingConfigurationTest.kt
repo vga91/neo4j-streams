@@ -1,6 +1,7 @@
 package streams
 
 import org.junit.Test
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import streams.events.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

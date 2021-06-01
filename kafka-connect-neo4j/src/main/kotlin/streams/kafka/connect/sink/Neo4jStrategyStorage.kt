@@ -1,15 +1,13 @@
 package streams.kafka.connect.sink
 
+import org.neo4j.graph_integration.IngestionStrategy
+import org.neo4j.graph_integration.strategy.cud.CUDIngestionStrategy
+import org.neo4j.graph_integration.strategy.cypher.CypherTemplateIngestionStrategy
+import org.neo4j.graph_integration.strategy.pattern.NodePatternIngestionStrategy
+import org.neo4j.graph_integration.strategy.pattern.RelationshipPatternIngestionStrategy
 import streams.service.StreamsStrategyStorage
 import streams.service.TopicType
-import streams.service.sink.strategy.CUDIngestionStrategy
-import streams.service.sink.strategy.CypherTemplateStrategy
-import streams.service.sink.strategy.IngestionStrategy
-import streams.service.sink.strategy.NodePatternIngestionStrategy
-import streams.service.sink.strategy.RelationshipPatternIngestionStrategy
 import streams.service.sink.strategy.SchemaIngestionStrategy
-import streams.service.sink.strategy.SourceIdIngestionStrategy
-import streams.service.sink.strategy.SourceIdIngestionStrategyConfig
 
 class Neo4jStrategyStorage(val config: Neo4jSinkConnectorConfig): StreamsStrategyStorage() {
     private val topicConfigMap = config.topics.asMap()
@@ -22,13 +20,13 @@ class Neo4jStrategyStorage(val config: Neo4jSinkConnectorConfig): StreamsStrateg
         }
     }
 
-    override fun getStrategy(topic: String): IngestionStrategy = when (val topicType = getTopicType(topic)) {
-        TopicType.CDC_SOURCE_ID -> config.strategyMap[topicType] as SourceIdIngestionStrategy
+    override fun getStrategy(topic: String) : IngestionStrategy<Any, Any> = when (val topicType = getTopicType(topic)) {
+        TopicType.CDC_SOURCE_ID -> config.strategyMap[topicType] as IngestionStrategy<Any, Any>
         TopicType.CDC_SCHEMA -> SchemaIngestionStrategy()
         TopicType.CUD -> CUDIngestionStrategy()
         TopicType.PATTERN_NODE -> NodePatternIngestionStrategy(config.topics.nodePatternTopics.getValue(topic))
         TopicType.PATTERN_RELATIONSHIP -> RelationshipPatternIngestionStrategy(config.topics.relPatternTopics.getValue(topic))
-        TopicType.CYPHER -> CypherTemplateStrategy(config.topics.cypherTopics.getValue(topic))
+        TopicType.CYPHER -> CypherTemplateIngestionStrategy(config.topics.cypherTopics.getValue(topic))
         null -> throw RuntimeException("Topic Type not Found")
     }
 }

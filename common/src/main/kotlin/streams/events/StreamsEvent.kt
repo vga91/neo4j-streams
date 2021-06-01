@@ -1,6 +1,6 @@
 package streams.events
 
-import org.neo4j.graphdb.schema.ConstraintType
+import org.neo4j.graph_integration.strategy.cud.EntityType
 
 enum class OperationType { created, updated, deleted }
 
@@ -12,8 +12,6 @@ data class Meta(val timestamp: Long,
                 val operation: OperationType,
                 val source: Map<String, Any> = emptyMap())
 
-
-enum class EntityType { node, relationship }
 
 data class RelationshipNodeChange(val id: String,
                                   val labels: List<String>?,

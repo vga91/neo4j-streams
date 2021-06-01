@@ -2,7 +2,6 @@ package integrations.kafka
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericRecord
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.hamcrest.Matchers
@@ -43,11 +42,11 @@ class KafkaEventSinkAvroTSE : KafkaEventSinkBaseTSE() {
                 .build()
 
         // when
-        kafkaAvroProducer.send(ProducerRecord<GenericRecord, GenericRecord>(topic, null, struct)).get()
+        kafkaAvroProducer.send(ProducerRecord(topic, null, struct)).get()
 
         // then
         val props = mapOf("name" to "Foo", "coordinates" to coordinates.toDoubleArray(), "citizens" to citizens)
-        Assert.assertEventually(ThrowingSupplier<Boolean, Exception> {
+        Assert.assertEventually(ThrowingSupplier {
             val query = """
                 |MATCH (p:Place)
                 |RETURN p""".trimMargin()
@@ -91,11 +90,11 @@ class KafkaEventSinkAvroTSE : KafkaEventSinkBaseTSE() {
                 .build()
 
         // when
-        kafkaAvroProducer.send(ProducerRecord<GenericRecord, GenericRecord>(topic, null, struct)).get()
+        kafkaAvroProducer.send(ProducerRecord(topic, null, struct)).get()
 
         // then
         val props = mapOf("name" to "Foo", "coordinates" to coordinates.toDoubleArray(), "citizens" to citizens)
-        Assert.assertEventually(ThrowingSupplier<Boolean, Exception> {
+        Assert.assertEventually(ThrowingSupplier {
             val query = """
                 |MATCH (p:Place)
                 |RETURN p""".trimMargin()

@@ -1,9 +1,9 @@
 package streams.service.sink.strategy
 
 import org.junit.Test
+import org.neo4j.graph_integration.Entity
+import org.neo4j.graph_integration.utils.IngestionUtils
 import streams.events.*
-import streams.service.StreamsSinkEntity
-import streams.utils.StreamsUtils
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -60,24 +60,24 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd),
-                StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart),
+            Entity(cdcDataEnd, cdcDataEnd),
+            Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, nodeDeleteEvents.size)
         assertEquals(1, nodeEvents.size)
         val nodeQuery = nodeEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (n:User{surname: event.properties.surname, name: event.properties.name})
             |SET n = event.properties
         """.trimMargin()
@@ -94,7 +94,7 @@ class SchemaIngestionStrategyTest {
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:User{name: event.start.name, surname: event.start.surname})
             |MERGE (end:User{name: event.end.name, surname: event.end.surname})
             |MERGE (start)-[r:`KNOWS WHO`]->(end)
@@ -143,21 +143,20 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = nodeSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(
-                StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart), 
+            Entity(cdcDataEnd, cdcDataEnd))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
         // then
         assertEquals(0, nodeDeleteEvents.size)
         assertEquals(1, nodeEvents.size)
         val nodeQuery = nodeEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (n:User{surname: event.properties.surname, name: event.properties.name})
             |SET n = event.properties
             |SET n:NewLabel
@@ -197,19 +196,19 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, relationshipDeleteEvents.size)
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:`User Ext`{name: event.start.name, surname: event.start.surname})
             |MERGE (end:`Product Ext`{name: event.end.name})
             |MERGE (start)-[r:`HAS BOUGHT`]->(end)
@@ -269,19 +268,19 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
-
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
+        
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, relationshipDeleteEvents.size)
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:`User Ext`{address: event.start.address})
             |MERGE (end:`Product Ext`{code: event.end.code})
             |MERGE (start)-[r:`HAS BOUGHT`]->(end)
@@ -344,26 +343,26 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, relationshipDeleteEvents.size)
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQueryOne = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:`User AAA`:`User Ext`{another_two: event.start.another_two})
             |MERGE (end:`Product Ext`{code: event.end.code})
             |MERGE (start)-[r:`HAS BOUGHT`]->(end)
             |SET r = event.properties
         """.trimMargin()
         val expectedRelQueryTwo = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:`User Ext`:`User AAA`{another_two: event.start.another_two})
             |MERGE (end:`Product Ext`{code: event.end.code})
             |MERGE (start)-[r:`HAS BOUGHT`]->(end)
@@ -413,21 +412,19 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = nodeSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(
-                StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart), Entity(cdcDataEnd, cdcDataEnd))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
         // then
         assertEquals(1, nodeDeleteEvents.size)
         assertEquals(0, nodeEvents.size)
         val nodeQuery = nodeDeleteEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MATCH (n:User{surname: event.properties.surname, name: event.properties.name})
             |DETACH DELETE n
         """.trimMargin()
@@ -464,19 +461,19 @@ class SchemaIngestionStrategyTest {
                 ),
                 schema = relSchema
         )
-        val cdcQueryStrategy = SchemaIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SchemaIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(1, relationshipDeleteEvents.size)
         assertEquals(0, relationshipEvents.size)
         val relQuery = relationshipDeleteEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MATCH (start:User{name: event.start.name, surname: event.start.surname})
             |MATCH (end:User{name: event.end.name, surname: event.end.surname})
             |MATCH (start)-[r:`KNOWS WHO`]->(end)

@@ -1,10 +1,8 @@
 package streams.kafka.connect.sink
 
 import org.apache.kafka.connect.sink.SinkRecord
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import streams.kafka.connect.utils.toStreamsSinkEntity
-import streams.service.StreamsSinkEntity
+import org.neo4j.graph_integration.Entity
+import streams.kafka.connect.utils.toEntity
 
 class EventBuilder {
     private var batchSize: Int? = null
@@ -20,12 +18,12 @@ class EventBuilder {
         return this
     }
 
-    fun build(): Map<String, List<List<StreamsSinkEntity>>> { // <Topic, List<List<SinkRecord>>
+    fun build(): Map<String, List<List<Entity<Any, Any>>>> {
         val batchSize = this.batchSize!!
         return this.sinkRecords
                 .groupBy { it.topic() }
                 .mapValues { entry ->
-                    val value = entry.value.map { it.toStreamsSinkEntity() }
+                    val value = entry.value.map { it.toEntity() }
                     if (batchSize > value.size) listOf(value) else value.chunked(batchSize)
                 }
     }

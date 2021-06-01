@@ -11,9 +11,9 @@ import org.junit.Assume.assumeTrue
 import org.mockito.Mockito.mock
 import org.neo4j.driver.*
 import org.neo4j.driver.exceptions.ClientException
+import org.neo4j.graph_integration.strategy.cud.CUDNode
+import org.neo4j.graph_integration.strategy.cud.CUDOperations
 import streams.events.*
-import streams.service.sink.strategy.CUDNode
-import streams.service.sink.strategy.CUDOperations
 import streams.utils.JSONUtils
 import java.util.*
 import kotlin.test.assertEquals

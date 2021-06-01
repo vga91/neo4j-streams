@@ -1,9 +1,9 @@
 package streams.service.sink.strategy
 
 import org.junit.Test
+import org.neo4j.graph_integration.Entity
+import org.neo4j.graph_integration.utils.IngestionUtils
 import streams.events.*
-import streams.service.StreamsSinkEntity
-import streams.utils.StreamsUtils
 import kotlin.test.assertEquals
 
 class SourceIdIngestionStrategyTest {
@@ -58,25 +58,24 @@ class SourceIdIngestionStrategyTest {
                 schema = Schema()
         )
         val config = SourceIdIngestionStrategyConfig(labelName = "Custom SourceEvent", idName = "custom Id")
-        val cdcQueryStrategy = SourceIdIngestionStrategy(config)
-        val txEvents = listOf(
-                StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd),
-                StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SourceIdIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>(config)
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart),
+                Entity(cdcDataEnd, cdcDataEnd),
+                Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, nodeDeleteEvents.size)
         assertEquals(1, nodeEvents.size)
         val nodeQuery = nodeEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (n:`Custom SourceEvent`{`custom Id`: event.id})
             |SET n = event.properties
             |SET n.`custom Id` = event.id
@@ -95,7 +94,7 @@ class SourceIdIngestionStrategyTest {
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:`Custom SourceEvent`{`custom Id`: event.start})
             |MERGE (end:`Custom SourceEvent`{`custom Id`: event.end})
             |MERGE (start)-[r:`KNOWS WHO`{`custom Id`: event.id}]->(end)
@@ -144,21 +143,19 @@ class SourceIdIngestionStrategyTest {
                 ),
                 schema = nodeSchema
         )
-        val cdcQueryStrategy = SourceIdIngestionStrategy()
-        val txEvents = listOf(
-                StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd))
+        val cdcQueryStrategy = SourceIdIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart), Entity(cdcDataEnd, cdcDataEnd))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
         // then
         assertEquals(0, nodeDeleteEvents.size)
         assertEquals(1, nodeEvents.size)
         val nodeQuery = nodeEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (n:SourceEvent{sourceId: event.id})
             |SET n = event.properties
             |SET n.sourceId = event.id
@@ -196,19 +193,19 @@ class SourceIdIngestionStrategyTest {
                 ),
                 schema = Schema()
         )
-        val cdcQueryStrategy = SourceIdIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SourceIdIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(0, relationshipDeleteEvents.size)
         assertEquals(1, relationshipEvents.size)
         val relQuery = relationshipEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND}
+            |${IngestionUtils.UNWIND}
             |MERGE (start:SourceEvent{sourceId: event.start})
             |MERGE (end:SourceEvent{sourceId: event.end})
             |MERGE (start)-[r:`KNOWS WHO`{sourceId: event.id}]->(end)
@@ -257,21 +254,19 @@ class SourceIdIngestionStrategyTest {
                 ),
                 schema = nodeSchema
         )
-        val cdcQueryStrategy = SourceIdIngestionStrategy()
-        val txEvents = listOf(
-                StreamsSinkEntity(cdcDataStart, cdcDataStart),
-                StreamsSinkEntity(cdcDataEnd, cdcDataEnd))
+        val cdcQueryStrategy = SourceIdIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataStart, cdcDataStart), Entity(cdcDataEnd, cdcDataEnd))
 
         // when
-        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents)
-        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents)
+        val nodeEvents = cdcQueryStrategy.mergeNodeEvents(txEvents).events
+        val nodeDeleteEvents = cdcQueryStrategy.deleteNodeEvents(txEvents).events
 
         // then
         assertEquals(1, nodeDeleteEvents.size)
         assertEquals(0, nodeEvents.size)
         val nodeQuery = nodeDeleteEvents[0].query
         val expectedNodeQuery = """
-            |${StreamsUtils.UNWIND} MATCH (n:SourceEvent{sourceId: event.id}) DETACH DELETE n
+            |${IngestionUtils.UNWIND} MATCH (n:SourceEvent{sourceId: event.id}) DETACH DELETE n
         """.trimMargin()
         assertEquals(expectedNodeQuery, nodeQuery.trimIndent())
         val eventsNodeList = nodeDeleteEvents[0].events
@@ -304,19 +299,19 @@ class SourceIdIngestionStrategyTest {
                 ),
                 schema = Schema()
         )
-        val cdcQueryStrategy = SourceIdIngestionStrategy()
-        val txEvents = listOf(StreamsSinkEntity(cdcDataRelationship, cdcDataRelationship))
+        val cdcQueryStrategy = SourceIdIngestionStrategy<StreamsTransactionEvent, StreamsTransactionEvent>()
+        val txEvents = listOf(Entity(cdcDataRelationship, cdcDataRelationship))
 
         // when
-        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents)
-        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents)
+        val relationshipEvents = cdcQueryStrategy.mergeRelationshipEvents(txEvents).events
+        val relationshipDeleteEvents = cdcQueryStrategy.deleteRelationshipEvents(txEvents).events
 
         // then
         assertEquals(1, relationshipDeleteEvents.size)
         assertEquals(0, relationshipEvents.size)
         val relQuery = relationshipDeleteEvents[0].query
         val expectedRelQuery = """
-            |${StreamsUtils.UNWIND} MATCH ()-[r:`KNOWS WHO`{sourceId: event.id}]-() DELETE r
+            |${IngestionUtils.UNWIND} MATCH ()-[r:`KNOWS WHO`{sourceId: event.id}]-() DELETE r
         """.trimMargin()
         assertEquals(expectedRelQuery, relQuery.trimIndent())
         val eventsRelList = relationshipDeleteEvents[0].events

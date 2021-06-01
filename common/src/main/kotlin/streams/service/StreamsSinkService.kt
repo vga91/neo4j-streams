@@ -1,6 +1,7 @@
 package streams.service
 
-import streams.service.sink.strategy.IngestionStrategy
+import org.neo4j.graph_integration.Entity
+import org.neo4j.graph_integration.IngestionStrategy
 
 
 const val STREAMS_TOPIC_KEY: String = "streams.sink.topic"
@@ -16,27 +17,27 @@ enum class TopicType(val group: TopicTypeGroup, val key: String) {
     CUD(group = TopicTypeGroup.CUD, key = "$STREAMS_TOPIC_KEY.cud")
 }
 
-data class StreamsSinkEntity(val key: Any?, val value: Any?)
 
 abstract class StreamsStrategyStorage {
     abstract fun getTopicType(topic: String): TopicType?
 
-    abstract fun getStrategy(topic: String): IngestionStrategy
+    abstract fun getStrategy(topic: String): IngestionStrategy<Any, Any>
 }
 
 abstract class StreamsSinkService(private val streamsStrategyStorage: StreamsStrategyStorage) {
 
     abstract fun write(query: String, events: Collection<Any>)
 
-    private fun writeWithStrategy(data: Collection<StreamsSinkEntity>, strategy: IngestionStrategy) {
-        strategy.mergeNodeEvents(data).forEach { write(it.query, it.events) }
-        strategy.deleteNodeEvents(data).forEach { write(it.query, it.events) }
 
-        strategy.mergeRelationshipEvents(data).forEach { write(it.query, it.events) }
-        strategy.deleteRelationshipEvents(data).forEach { write(it.query, it.events) }
+    private fun writeWithStrategy(data: Collection<Entity<Any, Any>>, strategy: IngestionStrategy<Any, Any>) {
+        strategy.mergeNodeEvents(data).events.forEach { write(it.query, it.events) }
+        strategy.deleteNodeEvents(data).events.forEach { write(it.query, it.events) }
+
+        strategy.mergeRelationshipEvents(data).events.forEach { write(it.query, it.events) }
+        strategy.deleteRelationshipEvents(data).events.forEach { write(it.query, it.events) }
     }
 
-    fun writeForTopic(topic: String, params: Collection<StreamsSinkEntity>) {
+    fun writeForTopic(topic: String, params: Collection<Entity<Any, Any>>) {
         writeWithStrategy(params, streamsStrategyStorage.getStrategy(topic))
     }
 }

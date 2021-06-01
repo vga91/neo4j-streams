@@ -3,18 +3,18 @@ package streams
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.neo4j.graph_integration.Entity
+import org.neo4j.graph_integration.IngestionStrategy
+import org.neo4j.graph_integration.strategy.cypher.CypherTemplateIngestionStrategy
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.NullLog
 import org.neo4j.test.rule.DbmsRule
 import org.neo4j.test.rule.ImpermanentDbmsRule
 import streams.extensions.execute
 import streams.kafka.KafkaSinkConfiguration
-import streams.service.StreamsSinkEntity
 import streams.service.StreamsStrategyStorage
 import streams.service.TopicType
 import streams.service.Topics
-import streams.service.sink.strategy.CypherTemplateStrategy
-import streams.service.sink.strategy.IngestionStrategy
 import kotlin.test.assertEquals
 
 class StreamsEventSinkQueryExecutionTest {
@@ -34,8 +34,8 @@ class StreamsEventSinkQueryExecutionTest {
                 TODO("not implemented")
             }
 
-            override fun getStrategy(topic: String): IngestionStrategy {
-                return CypherTemplateStrategy(streamsTopicService.getCypherTemplate(topic)!!)
+            override fun getStrategy(topic: String): IngestionStrategy<Any, Any> {
+                return CypherTemplateIngestionStrategy(streamsTopicService.getCypherTemplate(topic)!!)
             }
 
         })
@@ -53,8 +53,8 @@ class StreamsEventSinkQueryExecutionTest {
         val second = mapOf("id" to "2", "properties" to mapOf("a" to 1))
 
         // when
-        streamsEventSinkQueryExecution.writeForTopic("shouldWriteCypherQuery", listOf(StreamsSinkEntity(first, first),
-                StreamsSinkEntity(second, second)))
+        streamsEventSinkQueryExecution.writeForTopic("shouldWriteCypherQuery", 
+            listOf(Entity(first, first), Entity(second, second)))
 
         // then
         db.execute("MATCH (n:Label) RETURN count(n) AS count") { it.columnAs<Long>("count").next() }

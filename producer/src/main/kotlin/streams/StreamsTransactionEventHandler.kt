@@ -4,7 +4,7 @@ import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.Transaction
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.neo4j.dbms.api.DatabaseManagementService
+import org.neo4j.graph_integration.strategy.cud.EntityType
 import org.neo4j.graphdb.event.TransactionData
 import org.neo4j.graphdb.event.TransactionEventListener
 import org.neo4j.kernel.internal.GraphDatabaseAPI
